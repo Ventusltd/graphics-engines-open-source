@@ -1,0 +1,58 @@
+[
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "web/explore.html",
+    "destination": "web/index.html",
+    "sha256": "c2f771d41196c2cabc18a6c7547d1b72586e6bac36f66a75207998d2ccbbad9a",
+    "basis": "local working-tree prototype, not a released upstream version"
+  },
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "web/explore.mjs",
+    "destination": "web/explore.mjs",
+    "sha256": "56a2f73652afda6f5bb7971251af341741ebc8479f357fc517f5b35005a074a0",
+    "basis": "local working-tree prototype, not a released upstream version"
+  },
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "web/explore.css",
+    "destination": "web/explore.css",
+    "sha256": "be97d08a423b45f7fcdf9e201c507fb71993d2e7cef87f9687e2fe5646f6d019",
+    "basis": "local working-tree prototype, not a released upstream version"
+  },
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "web/gridatlas.mjs",
+    "destination": "web/gridatlas.mjs",
+    "sha256": "bc422eae5993729c7de51e24620605159728090305d016ca12b5aeb1c72d8bfd",
+    "basis": "local working-tree prototype, not a released upstream version"
+  },
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "web/atlas-picker.mjs",
+    "destination": "web/atlas-picker.mjs",
+    "sha256": "2d07ee8a251324d93b20a4811a918dea5e98d43d847377e5c3c8ce2cb281ef65",
+    "basis": "local working-tree prototype, not a released upstream version"
+  },
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "LICENSE-ARRAY",
+    "destination": "LICENSE",
+    "sha256": "dea05895da992de521a57b02d719234726fad1583dead0b6bc6b6d28529ca7ee",
+    "basis": "local working-tree prototype, not a released upstream version"
+  },
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "tests/explore.test.mjs",
+    "destination": "tests/explore.test.mjs",
+    "sha256": "468a9bc2069a0b9b43eaec90b9977f88d76a46dd3e599f6f884c7f9544fca31c",
+    "basis": "local working-tree prototype, not a released upstream version"
+  },
+  {
+    "source_repository": "Ventusltd/kuiper-drawing-engine",
+    "source_file": "tests/gridatlas.test.mjs",
+    "destination": "tests/gridatlas.test.mjs",
+    "sha256": "aa693c12f0ddbf4f60c75e4a699346feccc8f8887a32aae7667e42e579677741",
+    "basis": "local working-tree prototype, not a released upstream version"
+  }
+]
