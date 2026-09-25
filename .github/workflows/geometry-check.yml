@@ -1,0 +1,91 @@
+name: Public geometry checks
+on:
+  workflow_dispatch:
+    inputs:
+      local_gpu_summary:
+        description: Optional allowlisted self-reported local GPU summary JSON
+        required: false
+        type: string
+  push:
+    paths:
+      - 'web/**'
+      - 'tests/**'
+      - '.github/workflows/geometry-check.yml'
+permissions:
+  contents: read
+concurrency:
+  group: public-geometry-check
+  cancel-in-progress: false
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate optional self-reported local summary
+        env:
+          LOCAL_GPU_SUMMARY: ${{ inputs.local_gpu_summary }}
+        run: |
+          python - <<'PY'
+          import json, math, os, re
+          from pathlib import Path
+          text = os.environ.get('LOCAL_GPU_SUMMARY', '')
+          if text:
+              assert len(text.encode()) <= 4096, 'Summary exceeds 4096 bytes'
+              value = json.loads(text)
+              assert set(value) == {'schema','status','samples','fixture_sha256','panel_max_error_m','route_max_error_m'}
+              assert value['schema'] == 'local-gpu-summary/1' and value['status'] == 'pass'
+              assert type(value['samples']) is int and 1 <= value['samples'] <= 60
+              assert isinstance(value['fixture_sha256'], str) and re.fullmatch('[0-9a-f]{64}', value['fixture_sha256'])
+              for key in ['panel_max_error_m','route_max_error_m']:
+                  assert type(value[key]) in (int,float) and math.isfinite(value[key]) and 0 <= value[key] < 1e-9
+              folder = Path('.local/public-check')
+              folder.mkdir(parents=True, exist_ok=True)
+              (folder / 'local-gpu-summary.json').write_text(json.dumps({'provenance':'Self-reported local GPU check; not independently executed by this GitHub runner. Baseline fixture only.', 'summary':value}, indent=2), encoding='utf-8')
+          PY
+      - name: Check repository-generated demonstration geometry
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .local/public-check
+          node tests/explore.test.mjs .local/public-check/explore-geometry.json > .local/public-check/test-report.txt 2>&1
+          node --test tests/gridatlas.test.mjs tests/route-file.test.mjs >> .local/public-check/test-report.txt 2>&1
+          node --check web/explore.mjs
+          node --check web/route-files-ui.mjs
+      - name: Record scope and fixture digest
+        if: always()
+        shell: bash
+        env:
+          CHECK_OUTCOME: ${{ job.status }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          folder = Path('.local/public-check')
+          folder.mkdir(parents=True, exist_ok=True)
+          fixture = folder / 'explore-geometry.json'
+          report = {
+              'check': 'public-repository-cpu-geometry',
+              'outcome': os.environ['CHECK_OUTCOME'],
+              'commit': os.environ['GITHUB_SHA'],
+              'fixture_sha256': hashlib.sha256(fixture.read_bytes()).hexdigest() if fixture.exists() else None,
+              'scope': 'CPU Node checks of generic demonstration geometry, cameras, inventory and route files. No GPU or browser execution. No surveyed site validation or engineering approval.',
+              'inputs': 'Public repository only; no local workstation data or GPU-watch logs.'
+          }
+          (folder / 'summary.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+          PY
+      - name: Upload only generated public demonstration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-geometry-evidence
+          retention-days: 7
+          include-hidden-files: true
+          path: |
+            .local/public-check/explore-geometry.json
+            .local/public-check/test-report.txt
+            .local/public-check/summary.json
+            .local/public-check/local-gpu-summary.json
