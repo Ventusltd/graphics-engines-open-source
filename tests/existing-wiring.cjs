@@ -4,7 +4,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const out=path.resolve(__dirname,'../.local/existing-wiring');fs.mkdirSync(out,{recursive:true});
 const base=process.env.EXISTING_WIRING_BASE||'https://globalgrid2050.com/ventus/wiring/';
 (async()=>{let browser;const results=[];try{
- browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{}),args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  for(const name of ['inverter-48','inverter-station']){
   const page=await browser.newPage({viewport:{width:1600,height:1100}}),result={name,url:new URL(name+'.html',base).href,errors:[],checks:[]};results.push(result);
   page.on('pageerror',error=>result.errors.push(error.message));page.setDefaultTimeout(30000);
@@ -13,14 +13,16 @@ const base=process.env.EXISTING_WIRING_BASE||'https://globalgrid2050.com/ventus/
    if(!await page.locator('#flow').isVisible())await page.locator(name==='inverter-48'?'#menu':'#controls').click();
    if(name==='inverter-48'){
     await page.waitForFunction(()=>window.__inverter48?.ready===true);
-    const snapshot=()=>page.evaluate(()=>({ready:__inverter48.ready,playing:__inverter48.playing,frames:__inverter48.flowFrames,stats:__inverter48.flowStats,homes:__inverter48.animatedHomeCount}));
+    const snapshot=()=>page.evaluate(()=>({ready:__inverter48.ready,playing:__inverter48.playing,frames:__inverter48.flowFrames,stats:__inverter48.flowStats,homes:__inverter48.animatedHomeCount,visibility:document.visibilityState}));
     result.initial=await snapshot();if(!result.initial.playing)await page.locator('#flow').click();
     await page.waitForFunction(()=>__inverter48.flowFrames>2&&__inverter48.flowStats.homePaths>0);
-    const before=await snapshot();await page.waitForTimeout(350);const after=await snapshot();
+    const before=await snapshot(),started=Date.now();result.frameProbe={before};
+    try{await page.waitForFunction(previous=>__inverter48.flowFrames>previous,before.frames,{timeout:10000,polling:100});}finally{result.frameProbe.elapsedMs=Date.now()-started;result.frameProbe.after=await snapshot();}
+    const after=await snapshot();
     assert.equal(after.playing,true);assert.ok(after.frames>before.frames);assert.equal(after.homes,48);result.running=after;
     await page.screenshot({path:path.join(out,name+'-running.png')});
     await page.locator('#flow').click();await page.waitForTimeout(150);const stopped=await snapshot();await page.waitForTimeout(350);const still=await snapshot();assert.equal(still.playing,false);assert.equal(still.frames,stopped.frames);result.paused=still;
-    await page.locator('#flow').click();await page.waitForFunction(previous=>__inverter48.flowFrames>previous,still.frames);result.checks.push('ready; 48 animated home cables; frames advance, pause and resume');
+    await page.locator('#flow').click();await page.waitForFunction(previous=>__inverter48.flowFrames>previous,still.frames,{timeout:10000,polling:100});result.checks.push('ready; 48 animated home cables; frames advance, pause and resume');
    }else{
     await page.waitForFunction(()=>window.__inverterStation?.model&&document.querySelector('#drawing .power'));
     result.model=await page.evaluate(()=>({inverters:__inverterStation.model.inverters.length,cables:__inverterStation.model.cables.length,sections:__inverterStation.model.sections.length}));
