@@ -74,3 +74,36 @@ export function gridAtlasProjectUrl(project) {
     lat: String(project.latitude), lon: String(project.longitude) }).toString();
   return url.href;
 }
+
+export const GRIDATLAS_SUBSTATION_SOURCE = Object.freeze({
+  url: 'https://ventusltd.github.io/gridatlas/atlas/releases/202608300453-atlas-v9/data/grid_substations.geojson',
+  sha256: '87976435766a58ddf19c99540b58cd7f18a224148af42ba55075d8851f9e6251',
+  generation: '202608300453-atlas-v9',
+  label: 'GridAtlas public substation point snapshot'
+});
+
+export function decodeGridAtlasSubstations(data) {
+  if (data?.type !== 'FeatureCollection' || !Array.isArray(data.features) || data.features.length > 100000)
+    throw Error('Unsupported GridAtlas substation snapshot');
+  const substations = [];
+  for (const [index, feature] of data.features.entries()) {
+    const coordinates = feature?.geometry?.coordinates;
+    if (feature?.geometry?.type !== 'Point' || !Array.isArray(coordinates)
+        || !publishedCoordinate(coordinates[1], coordinates[0])) continue;
+    substations.push({ id: `substation-${index}`, source_index: index,
+      snapshot_sha256: GRIDATLAS_SUBSTATION_SOURCE.sha256,
+      latitude: coordinates[1], longitude: coordinates[0],
+      voltage: typeof feature.properties?.voltage === 'string' ? feature.properties.voltage : null });
+  }
+  return { substations, source: GRIDATLAS_SUBSTATION_SOURCE };
+}
+
+export async function loadGridAtlasSubstations({ signal } = {}) {
+  const response = await fetch(GRIDATLAS_SUBSTATION_SOURCE.url, { signal });
+  if (!response.ok) throw Error(`GridAtlas substation request failed (${response.status})`);
+  const bytes = await response.arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  const hash = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('');
+  if (hash !== GRIDATLAS_SUBSTATION_SOURCE.sha256) throw Error('GridAtlas substation snapshot hash mismatch');
+  return decodeGridAtlasSubstations(JSON.parse(new TextDecoder().decode(bytes)));
+}

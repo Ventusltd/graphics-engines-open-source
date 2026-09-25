@@ -27,4 +27,11 @@ assert.ok(Math.abs(evaluate('eye[1]')-.05)<1e-9);
 evaluate('routes=originalRoutes;settings.height=1.5;build()');
 const fixture=evaluate('({settings,vertices,routes:routes.map(r=>({id:r.id,points:r.points,length:r.length})),units:"metres",stride:6,axes:"east,north,up",columns:"x,y,z,r,g,b"})');
 if(process.argv[2]){fs.mkdirSync(new URL('../.local/',import.meta.url),{recursive:true});fs.writeFileSync(process.argv[2],JSON.stringify(fixture));}
-console.log('Explorer: routes, validation, height >20 m, five camera modes and vertical cable checks passed.');
+evaluate('activatePlant()');
+const inventory=plain(evaluate('window.electricalExplorer.plantInventory'));
+assert.equal(inventory.modules,151516);assert.equal(inventory.blocks.reduce((sum,b)=>sum+b.modules,0),151516);
+assert.equal(inventory.stationCount,10);assert.equal(inventory.blocks.flatMap(b=>b.station.transformers).length,20);
+assert.equal(inventory.actualDCMWp,100.00056);assert.equal(inventory.aggregateTransformerMVA,100);
+assert.equal(evaluate('routes.length'),10);assert.equal(evaluate('settings.rows'),5);
+assert.ok(evaluate('vertices.length')<1000000,'overview remains bounded');
+console.log('Explorer: routes, camera, raised geometry and 100 MWp inventory checks passed.');

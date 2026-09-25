@@ -11,8 +11,8 @@ if (mount) {
   const title = element('h2', 'Anchor at a public solar project');
   const note = element('p', 'A published project point anchors this illustrative layout. It does not reconstruct the site or its cable routes.', { class: 'muted' });
   const load = element('button', 'Load GridAtlas projects', { type: 'button' });
-  const label = element('label', 'Name or REPD ID');
-  const query = element('input', '', { type: 'search', placeholder: 'Search solar', 'aria-label': 'Search public solar projects', disabled: '' });
+  const label = element('label', 'REPD ID');
+  const query = element('input', '', { type: 'search', placeholder: 'Search REPD ID', 'aria-label': 'Search public solar projects by REPD ID', disabled: '' });
   label.append(query);
   const resultsLabel = element('label', 'Project');
   const results = element('select', '', { 'aria-label': 'Public solar project matches', disabled: '' });
@@ -27,9 +27,10 @@ if (mount) {
   mount.append(title, note, load, label, resultsLabel, apply, status, details, source, element('br'), atlas);
   let projects = [], matches = [], generation = '';
   function refresh() {
-    matches = searchProjects(projects, query.value, { limit: 40 });
+    const term = query.value.trim();
+    matches = searchProjects(projects.filter(project => !term || project.repd_ref.includes(term)), '', { limit: 40 });
     results.replaceChildren();
-    for (const project of matches) results.append(element('option', `${project.name} · ${project.repd_ref}`, { value: project.repd_ref }));
+    for (const project of matches) results.append(element('option', `Solar project ${project.repd_ref}`, { value: project.repd_ref }));
     results.disabled = apply.disabled = matches.length === 0;
     status.textContent = matches.length ? `${matches.length} matches shown (maximum 40). Select a project to anchor.` : 'No matching solar projects with valid coordinates.';
   }
@@ -56,9 +57,9 @@ if (mount) {
     if (typeof window.electricalExplorer?.setOrigin !== 'function' || !window.electricalExplorer.state?.gpu) {
       status.textContent = 'The GPU scene is unavailable.'; return;
     }
-    try { window.electricalExplorer.setOrigin({ ...project, label: project.name }); }
+    try { window.electricalExplorer.setOrigin({ latitude: project.latitude, longitude: project.longitude, label: `Solar project ${project.repd_ref}` }); }
     catch (error) { status.textContent = `Could not anchor the scene: ${error.message}`; return; }
-    details.textContent = `Anchored project: ${project.name} · REPD ${project.repd_ref} · ${project.status} · ${Number.isFinite(project.capacity_mw) && project.capacity_mw >= 0 ? `${project.capacity_mw} MW published capacity` : 'capacity unavailable'} · snapshot ${generation}. Published point: ${project.latitude.toFixed(6)}, ${project.longitude.toFixed(6)}.`;
+    details.textContent = `Anchored solar project ${project.repd_ref} · ${project.status} · ${Number.isFinite(project.capacity_mw) && project.capacity_mw >= 0 ? `${project.capacity_mw} MW published capacity` : 'capacity unavailable'} · snapshot ${generation}. Published point: ${project.latitude.toFixed(6)}, ${project.longitude.toFixed(6)}.`;
     atlas.href = gridAtlasProjectUrl(project); atlas.hidden = false;
     status.textContent = 'Published point selected. Array dimensions and routes remain illustrative.';
   });

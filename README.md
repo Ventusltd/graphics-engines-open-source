@@ -8,11 +8,13 @@ Run `python -m http.server 8765 --bind 127.0.0.1 --directory web` from this repo
 
 Use Blueprint for the whole scene, Orbit to inspect geometry, Free flight to navigate rows, and Walk cable to follow a selected route from endpoint to endpoint. Numeric dimensions use metres. First-person movement is an inspection camera, not a collision or safe-access assessment.
 
-The optional GridAtlas picker fetches a pinned public project-point index only when requested. Selecting a point anchors the illustrative scene geographically; it does not recover the actual site's boundaries, cables or installed array layout. No confidential project documents or geometry are bundled.
+The optional GridAtlas pickers fetch pinned public project and substation points only when requested. Selecting a point anchors the illustrative scene geographically; it does not recover the actual site's boundaries, cables or installed array layout. Displayed IDs are neutral; no confidential project documents or geometry are bundled.
 
 ## Scope
 
-This first prototype is a bounded scene, not a nationwide detailed model. Cable paths are editable through the JavaScript API `window.electricalExplorer.setRoutes([{id,label,points:[[x,y,z],...]}])`; coordinates are local east, north, up. Routes are illustrative and do not automatically reroute when arrays change. There is no power-flow, thermal, electromagnetic, earthing or structural solver in the renderer.
+This first prototype is a bounded scene, not a nationwide detailed model. Import/export cable routes using local JSON files, or use `window.electricalExplorer.setRoutes([{id,label,points:[[x,y,z],...]}])`; coordinates are local east, north, up in metres. Routes do not automatically reroute when arrays change. There is no power-flow, thermal, electromagnetic, earthing or structural solver in the renderer.
+
+`gridatlas_gpu.py PROJECTS_JSON SUBSTATIONS_GEOJSON` compares every valid solar point against every valid substation in those supplied snapshots, in bounded GPU batches. Independent CPU haversine calculations witness every distance. Outputs remain under ignored `.local/`; nearest proximity does not imply a feasible connection, capacity or a cable route. The verified initial batch covered 3,558 located solar records and 5,800 substation points (20,636,400 pairs); five solar records lacked usable locations.
 
 ## Existing work to integrate
 
