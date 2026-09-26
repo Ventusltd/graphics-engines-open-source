@@ -4,6 +4,9 @@ Copyright (c) 2026 VENTUS LTD
 
 Applies to the newly authored web/, tools/ and tests/ array-layout files.
 Existing vendor material retains its separately recorded licences.
+Data files (web/versions/*/world/data/*.json, web/versions/*/world/site.json) and terrain and
+grid tiles (web/versions/*/world/sites/) are not covered by this licence; each keeps its own
+licence and attribution, listed in that version's world/ATTRIBUTION.md.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

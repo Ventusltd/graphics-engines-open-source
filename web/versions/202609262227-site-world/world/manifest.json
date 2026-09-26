@@ -1,0 +1,34 @@
+{
+ "schema": "world.manifest.v1",
+ "generation": "202609262232",
+ "site": {
+  "name": "open-land-01",
+  "centre_e": 400128,
+  "centre_n": 209920
+ },
+ "layers": [
+  {
+   "id": "ground-grid",
+   "path": "./layers/ground-grid.mjs",
+   "sha256": "eff6bebb995cd463b493bef05e458ab70b34ae511c4b398b21e89fde51201b22"
+  },
+  {
+   "id": "grid",
+   "path": "./layers/grid.mjs",
+   "sha256": "06f5e9004d7ebacc0fd61adc5ee852b671167c8eae5c13551e180b8079ef468f",
+   "config": {
+    "path": "sites/open-land-01/grid.odbl.json",
+    "sha256": "c20ee1eca9238fa50c5989ab5dd1c7bff5d1179f5eb1929a9b6df8df93c46ecb"
+   }
+  },
+  {
+   "id": "terrain",
+   "path": "./layers/terrain.mjs",
+   "sha256": "af39130771eee38e7bd7575eb9594788e888453e8e6d1f1f06db6f66b7f8650b",
+   "config": {
+    "index": "sites/open-land-01/tiles.json",
+    "sha256": "11f82a1016cdb4c442695738d89708060bcc023a9002e81421092b9dc0ba235c"
+   }
+  }
+ ]
+}

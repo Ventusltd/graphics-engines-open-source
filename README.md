@@ -24,6 +24,10 @@ This first prototype is a bounded scene, not a nationwide detailed model. Import
 
 Preserve the cable catalogue's distinction between estimated dimensions and verified product drawings. Planning-envelope values, measured dimensions and user assumptions must remain distinguishable.
 
+## Site world versions
+
+`web/versions/` holds dated releases of the site world viewer (1 m LiDAR terrain of an anonymous test site, walk and drone views, trench and cable routes), published next to the explorer at `versions/`. Each folder is self-contained, its layers are hash-checked against its own `world/manifest.json`, and older folders are never changed. `web/versions/index.json` lists them. Terrain, grid and project data keep their own licences, listed in each version's `world/ATTRIBUTION.md`.
+
 ## Rendering options
 
 The first viewer is dependency-free WebGL. Future adapters may use Three.js (MIT), Babylon.js (Apache-2.0), or CesiumJS (Apache-2.0) after checking the exact pinned version and retaining its notices. No such library is currently bundled. Geometry and route data should remain independent of the renderer.

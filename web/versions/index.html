@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site world versions</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --bg: #0a0a0a; --line: #9cdbff; --text: #cfe9ff; --dim: #6f8ea6; --edge: #1c2c3a; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  p { color: var(--dim); margin: 0 0 16px; }
+  a { color: var(--line); }
+  ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--edge); }
+  li { padding: 12px 0; border-bottom: 1px solid var(--edge); display: grid; gap: 2px; }
+  li time { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+  li span { color: var(--dim); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Site world versions</h1>
+  <p>Each release is kept in its own dated folder, newest first. Earlier versions stay available. The
+    <a href="../">electrical scene explorer</a> is separate and unchanged.</p>
+  <ol id="list"><li>Loading the version list…</li></ol>
+  <p style="margin-top:16px">Code: MIT. Terrain, grid and project data keep their own licences; each version lists them in
+    <code>world/ATTRIBUTION.md</code>.</p>
+</main>
+<script>
+fetch('index.json', { cache: 'no-cache' }).then(r => r.json()).then(j => {
+  const list = document.getElementById('list');
+  const items = (j.versions || []).slice().sort((a, b) => String(b.id).localeCompare(String(a.id)));
+  list.replaceChildren(...items.map(v => {
+    const li = document.createElement('li'), a = document.createElement('a'), t = document.createElement('time'), s = document.createElement('span');
+    a.href = v.path; a.textContent = v.id;
+    t.dateTime = v.date; t.textContent = v.date;
+    s.textContent = v.label;
+    li.append(a, s, t);
+    return li;
+  }));
+}).catch(() => { document.getElementById('list').innerHTML = '<li><a href="202609262227-site-world/">202609262227-site-world</a></li>'; });
+</script>
+</body>
+</html>
